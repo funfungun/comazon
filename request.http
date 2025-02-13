@@ -1,0 +1,30 @@
+###
+GET http://localhost:3000/users
+
+###
+GET http://localhost:3000/users/0569e200-b47c-4081-8e28-3efc3905d1e7
+
+###
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "Node.js Express 웹 서버 시작하기",
+  "firstName": "Express를 활용해 내 로컬에서 웹 서버 구동",
+  "lastName": "aaa",
+  "address": "전라도"
+}
+
+###
+PATCH http://localhost:3000/users/0569e200-b47c-4081-8e28-3efc3905d1e7
+Content-Type: application/json
+
+{
+  "email": "Node.js Express 웹 서버 시작하기",
+  "firstName": "Express를 활용해 내 로컬에서 웹 서버 구동",
+  "lastName": "aaa",
+  "address": "경상도"
+}
+
+###
+DELETE http://localhost:3000/users/0569e200-b47c-4081-8e28-3efc3905d1e7
