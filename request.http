@@ -1,3 +1,4 @@
+// users
 ###
 GET http://localhost:3000/users
 
@@ -9,8 +10,8 @@ POST http://localhost:3000/users
 Content-Type: application/json
 
 {
-  "email": "Node.js Express 웹 서버 시작하기",
-  "firstName": "Express를 활용해 내 로컬에서 웹 서버 구동",
+  "email": "r001109@naver.com",
+  "firstName": "bbb",
   "lastName": "aaa",
   "address": "전라도"
 }
@@ -28,3 +29,38 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:3000/users/0569e200-b47c-4081-8e28-3efc3905d1e7
+
+// products
+
+###
+GET http://localhost:3000/products?limit=3
+
+###
+GET http://localhost:3000/products/1dbcce64-046c-4fe5-8d04-238d37354bf3
+
+###
+POST http://localhost:3000/products
+Content-Type: application/json
+
+{
+  "name": "ㅋㅋㅋ",
+  "description": "안녕",
+  "category": "SPORTS",
+  "price": 10000,
+  "stock": 1
+}
+
+###
+PATCH http://localhost:3000/products/11e6b8d8-843c-4b07-9b83-79bc24a6d715
+Content-Type: application/json
+
+{
+  "name": "ㄴㄴㄴ",
+  "description": "안녕",
+  "category": "SPORTS",
+  "price": 10000,
+  "stock": 1
+}
+
+###
+DELETE http://localhost:3000/products/1dbcce64-046c-4fe5-8d04-238d37354bf3
