@@ -1,8 +1,14 @@
 import express from "express";
 import { Prisma, PrismaClient } from "@prisma/client";
 import * as dotenv from "dotenv";
-import { CreateProduct, CreateUser, PatchProduct } from "./struct.js";
-import { PatchUser } from "./struct.js";
+import {
+  CreateProduct,
+  CreateUser,
+  PatchProduct,
+  PatchUser,
+  CreateOrder,
+  PatchOrder,
+} from "./struct.js";
 import { assert } from "superstruct";
 
 dotenv.config();
@@ -58,6 +64,13 @@ app.get(
       orderBy,
       skip: parseInt(offset),
       take: parseInt(limit),
+      include: {
+        userPreference: {
+          select: {
+            receiveEmail: true,
+          },
+        },
+      },
     });
     res.send(users);
   })
@@ -78,8 +91,17 @@ app.post(
   "/users",
   asyncHandler(async (req, res) => {
     assert(req.body, CreateUser);
+    const { userPreference, ...userFields } = req.body;
     const user = await prisma.user.create({
-      data: req.body,
+      data: {
+        ...userFields,
+        userPreference: {
+          create: userPreference,
+        },
+      },
+      include: {
+        userPreference: true,
+      },
     });
     res.status(201).send(user);
   })
@@ -90,9 +112,19 @@ app.patch(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     assert(req.body, PatchUser);
+
+    const { userPreference, ...userFields } = req.body;
     const user = await prisma.user.update({
       where: { id },
-      data: req.body,
+      data: {
+        ...userFields,
+        userPreference: {
+          update: userPreference,
+        },
+      },
+      include: {
+        userPreference: true,
+      },
     });
     res.status(201).send(user);
   })
@@ -109,8 +141,32 @@ app.delete(
   })
 );
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log(`server staring on ${process.env.PORT}`)
+app.get(
+  "/users/:id/saved-products",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { savedProducts } = await prisma.user.findUniqueOrThrow({
+      where: { id },
+      include: {
+        savedProducts: true,
+      },
+    });
+    res.send(savedProducts);
+  })
+);
+
+app.get(
+  "/users/:id/orders",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { orders } = await prisma.user.findUniqueOrThrow({
+      where: { id },
+      include: {
+        orders: true,
+      },
+    });
+    res.send(orders);
+  })
 );
 
 //Product
@@ -190,4 +246,70 @@ app.delete(
     });
     res.send(product);
   })
+);
+
+// Orders
+app.get(
+  "/orders/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const order = await prisma.order.findUniqueOrThrow({
+      where: { id },
+      include: {
+        orderItems: true,
+      },
+    });
+    let total = 0;
+    order.orderItems.forEach(({ unitPrice, quantity }) => {
+      total += unitPrice * quantity;
+    });
+    order.total = total;
+    res.send(order);
+  })
+);
+
+app.post(
+  "/orders",
+  asyncHandler(async (req, res) => {
+    assert(req.body, CreateOrder);
+    const { userId, orderItems } = req.body;
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        orderItems: {
+          create: orderItems,
+        },
+      },
+      include: {
+        orderItems: true,
+      },
+    });
+    res.status(201).send(order);
+  })
+);
+
+app.patch(
+  "/orders/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    assert(req.body, PatchOrder);
+    const { userId, orderItems } = req.body;
+    const order = await prisma.order.update({
+      where: { id },
+      data: {
+        userId,
+        orderItems: {
+          update: orderItems,
+        },
+      },
+      include: {
+        orderItems: true,
+      },
+    });
+    res.status(201).send(order);
+  })
+);
+
+app.listen(process.env.PORT || 3000, () =>
+  console.log(`server staring on ${process.env.PORT}`)
 );
