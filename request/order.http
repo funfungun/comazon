@@ -16,7 +16,7 @@ Content-Type: application/json
     {
       "productId": "f751e63f-686d-42d4-898e-3ef6d4137908",
       "unitPrice": 79000,
-      "quantity": 2
+      "quantity": 1
     }
   ]
 }

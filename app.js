@@ -12,6 +12,7 @@ import {
   PatchSavedProduct,
 } from "./struct.js";
 import { assert } from "superstruct";
+import cors from "cors";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ const prisma = new PrismaClient();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const asyncHandler = (handler) => {
   return async (req, res) => {
