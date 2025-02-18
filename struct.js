@@ -49,3 +49,9 @@ export const CreateOrder = s.object({
 });
 
 export const PatchOrder = s.partial(CreateOrder);
+
+export const CreateSavedProduct = s.object({
+  productId: Uuid,
+});
+
+export const PatchSavedProduct = s.partial(CreateSavedProduct);

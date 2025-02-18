@@ -8,6 +8,8 @@ import {
   PatchUser,
   CreateOrder,
   PatchOrder,
+  CreateSavedProduct,
+  PatchSavedProduct,
 } from "./struct.js";
 import { assert } from "superstruct";
 
@@ -155,6 +157,39 @@ app.get(
   })
 );
 
+app.post(
+  "/users/:id/saved-products",
+  asyncHandler(async (req, res) => {
+    assert(req.body, CreateSavedProduct);
+    const { id: userId } = req.params;
+    const { productId } = req.body;
+    // judge logic
+    const savedCount = await prisma.user.count({
+      where: {
+        id: userId,
+        savedProducts: {
+          some: { id: productId },
+        },
+      },
+    });
+
+    // connect, disconnect
+    const { savedProducts } = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        savedProducts:
+          savedCount > 0
+            ? { disconnect: { id: productId } }
+            : { connect: { id: productId } },
+      },
+      include: {
+        savedProducts: true,
+      },
+    });
+    res.status(201).send(savedProducts);
+  })
+);
+
 app.get(
   "/users/:id/orders",
   asyncHandler(async (req, res) => {
@@ -273,17 +308,71 @@ app.post(
   asyncHandler(async (req, res) => {
     assert(req.body, CreateOrder);
     const { userId, orderItems } = req.body;
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        orderItems: {
-          create: orderItems,
-        },
-      },
-      include: {
-        orderItems: true,
-      },
+
+    // 1, get products
+    const productIds = orderItems.map((orderItem) => orderItem.productId);
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
     });
+
+    const getQuantity = (productId) => {
+      const { quantity } = orderItems.find(
+        (orderItem) => orderItem.productId === productId
+      );
+      return quantity;
+    };
+
+    // 2. 재고와 주문량 비교
+    const isSufficientStock = products.every((product) => {
+      const { id, stock } = product;
+      return stock >= getQuantity(id);
+    });
+
+    // 3. error or crate order
+    if (!isSufficientStock) {
+      throw new Eroor("Insufficient Stock");
+    }
+
+    // 4. 재고 감소 로직
+    // for (const productId of productIds) {
+    //   await prisma.product.update({
+    //     where: { id: productId },
+    //     data: {
+    //       stock: {
+    //         decrement: getQuantity(productId),
+    //       },
+    //     },
+    //   });
+    // }
+
+    const queries = productIds.map((productId) => {
+      return prisma.product.update({
+        where: { id: productId },
+        data: {
+          stock: {
+            decrement: getQuantity(productId),
+          },
+        },
+      });
+    });
+    // await Promise.all(queries);
+
+    const [order] = await prisma.$transaction([
+      prisma.order.create({
+        data: {
+          user: {
+            connect: { id: userId },
+          },
+          orderItems: {
+            create: orderItems,
+          },
+        },
+        include: {
+          orderItems: true,
+        },
+      }),
+      ...queries,
+    ]);
     res.status(201).send(order);
   })
 );

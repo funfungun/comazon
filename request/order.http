@@ -9,12 +9,12 @@ Content-Type: application/json
   "userId": "394b6896-739d-48ce-9f16-65ab0c7144e9",
   "orderItems": [
     {
-      "productId": "94aaacf7-d3fe-465f-bcfc-3556f7b57e2c",
+      "productId": "1e112c02-7c92-4d52-b76e-485e41e3f64d",
       "unitPrice": 59000,
       "quantity": 1
     },
     {
-      "productId": "1e112c02-7c92-4d52-b76e-485e41e3f64d",
+      "productId": "f751e63f-686d-42d4-898e-3ef6d4137908",
       "unitPrice": 79000,
       "quantity": 2
     }

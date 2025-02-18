@@ -35,5 +35,13 @@ DELETE http://localhost:3000/users/0569e200-b47c-4081-8e28-3efc3905d1e7
 GET http://localhost:3000/users/6c3a18b0-11c5-4d97-9019-9ebe3c4d1317/saved-products
 
 ###
+POST http://localhost:3000/users/6c3a18b0-11c5-4d97-9019-9ebe3c4d1317/saved-products
+Content-Type: application/json
+
+{
+  "productId": "f751e63f-686d-42d4-898e-3ef6d4137908"
+}
+
+###
 GET http://localhost:3000/users/6c3a18b0-11c5-4d97-9019-9ebe3c4d1317/orders
 
